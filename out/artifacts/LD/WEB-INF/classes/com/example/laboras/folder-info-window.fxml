@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="313.0" prefWidth="368.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.laboras.FolderInfoWindow">
+   <children>
+      <Label fx:id="id" layoutX="54.0" layoutY="42.0" text="Folder id" />
+      <Label fx:id="fileCount" layoutX="52.0" layoutY="69.0" text="File count" />
+      <Label fx:id="dateUpdated" layoutX="53.0" layoutY="128.0" text="Date updated" />
+      <Label fx:id="dateCreated" layoutX="56.0" layoutY="101.0" text="Date created" />
+      <Label fx:id="title" layoutX="184.0" layoutY="37.0" text="Folder Title">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <TextField fx:id="newTitle" layoutX="54.0" layoutY="168.0" promptText="New Folder Title" />
+      <Button fx:id="saveTitle" layoutX="238.0" layoutY="168.0" mnemonicParsing="false" onAction="#updateFolderTitle" text="Save" />
+      <Button fx:id="deleteFolder" layoutX="237.0" layoutY="257.0" mnemonicParsing="false" onAction="#deleteFolder" text="Delete folder" />
+      <Button fx:id="back" layoutX="34.0" layoutY="257.0" mnemonicParsing="false" onAction="#returnToCourse" text="Back" />
+      <Button fx:id="addFile" layoutX="238.0" layoutY="215.0" mnemonicParsing="false" onAction="#addFile" text="Add file" />
+      <TextField fx:id="fileTitle" layoutX="54.0" layoutY="215.0" promptText="File Title" />
+   </children>
+</AnchorPane>

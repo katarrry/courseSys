@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="256.0" prefWidth="213.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.laboras.LoginWindow">
+    <Button layoutX="82.0" layoutY="164.0" mnemonicParsing="false" onAction="#validateLogin" text="Log in" />
+    <Button layoutX="78.0" layoutY="201.0" mnemonicParsing="false" onAction="#createNewUser" text="Sign up" />
+    <TextField fx:id="loginF" layoutX="32.0" layoutY="59.0" />
+    <PasswordField fx:id="pswF" layoutX="33.0" layoutY="123.0" />
+    <Label layoutX="32.0" layoutY="31.0" text="login" />
+    <Label layoutX="33.0" layoutY="98.0" text="password" />
+</AnchorPane>
