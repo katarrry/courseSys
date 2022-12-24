@@ -1,7 +1,6 @@
 package com.example.laboras.webControllers;
 
-import com.example.laboras.control.Constants;
-import com.example.laboras.control.DbUtils;
+import com.example.laboras.control.*;
 import com.example.laboras.ds.Company;
 import com.example.laboras.ds.Person;
 import com.example.laboras.ds.User;
@@ -30,15 +29,15 @@ public class WebUserController {
         Properties data = parser.fromJson(request, Properties.class);
         String loginName = data.getProperty("login");
         String password = data.getProperty("psw");
-        int id = DbUtils.validateByCredentials(loginName, password);
+        int id = UserDbUtils.validateByCredentials(loginName, password);
         if (id==0) {
             return "Wrong credentials";
         }
         else {
-            if (DbUtils.getUserType(id).equals("C")) {
+            if (UserDbUtils.getUserType(id).equals("C")) {
                 return id + "," + "C";
             }
-            else if (DbUtils.getUserType(id).equals("A")) {
+            else if (UserDbUtils.getUserType(id).equals("A")) {
                 return id + "," + "A";
             }
             else return id + "," + "P";
@@ -49,15 +48,15 @@ public class WebUserController {
     @ResponseBody
     public String getUserInfo(@RequestParam("id") String id) {
         GsonBuilder gson = new GsonBuilder();
-        if (DbUtils.getUserType(Integer.parseInt(id)).equals("C")) {
-            Company company = DbUtils.getCompanyInfo(Integer.parseInt(id));
+        if (UserDbUtils.getUserType(Integer.parseInt(id)).equals("C")) {
+            Company company = CompanyDbUtils.getCompanyInfo(Integer.parseInt(id));
             gson.registerTypeAdapter(Company.class, new UserGSONSerializer());
             Gson parser = gson.create();
             if (company == null) return "error getting user info";
             else return parser.toJson(company);
         }
         else {
-            Person person = DbUtils.getPersonInfo(Integer.parseInt(id));
+            Person person = PersonDbUtils.getPersonInfo(Integer.parseInt(id));
             gson.registerTypeAdapter(Person.class, new UserGSONSerializer());
             Gson parser = gson.create();
             if (person == null) return "error getting user info";
@@ -68,8 +67,8 @@ public class WebUserController {
     @RequestMapping(value = "user/getCompanyTitle", method = RequestMethod.GET)
     @ResponseBody
     public String getTitle(@RequestParam("id") String id) {
-        if (DbUtils.getUserType(Integer.parseInt(id)).equals("C")) {
-            Company company = DbUtils.getCompanyInfo(Integer.parseInt(id));
+        if (UserDbUtils.getUserType(Integer.parseInt(id)).equals("C")) {
+            Company company = CompanyDbUtils.getCompanyInfo(Integer.parseInt(id));
             if (company == null) return "error getting user info";
             else return company.getTitle();
         }
@@ -89,7 +88,7 @@ public class WebUserController {
         String psw = data.getProperty("password");
         String email = data.getProperty("email");
 
-        DbUtils.addPerson(name, surname, login, psw, email);
+        PersonDbUtils.addPerson(name, surname, login, psw, email);
         return "Person created";
     }
 
@@ -104,14 +103,14 @@ public class WebUserController {
         String psw = data.getProperty("password");
         String email = data.getProperty("email");
         String title = data.getProperty("title");
-        DbUtils.addCompany(login, psw, name, surname, email, title);
+        CompanyDbUtils.addCompany(login, psw, name, surname, email, title);
         return "Company created";
     }
 
     @RequestMapping(value = "user/deleteUser", method = RequestMethod.DELETE)
     @ResponseBody
     public String deleteUser(@RequestParam("id") String id) {
-        DbUtils.deleteUserFromDb(Integer.parseInt(id));
+        UserDbUtils.deleteUserFromDb(Integer.parseInt(id));
         return "User deleted";
     }
 
@@ -207,7 +206,7 @@ public class WebUserController {
         Properties data = parser.fromJson(request, Properties.class);
         String courseId = data.getProperty("courseId");
         String userId = data.getProperty("userId");
-        if(DbUtils.isStudentEnrolled(Integer.parseInt(userId), Integer.parseInt(courseId)))
+        if(UserDbUtils.isStudentEnrolled(Integer.parseInt(userId), Integer.parseInt(courseId)))
             return "yes";
         else return "no";
     }
@@ -219,7 +218,7 @@ public class WebUserController {
         Properties data = parser.fromJson(request, Properties.class);
         String courseId = data.getProperty("courseId");
         String userId = data.getProperty("userId");
-        if (DbUtils.isCourseCreator(Integer.parseInt(userId), Integer.parseInt(courseId)) || DbUtils.isModerator(Integer.parseInt(userId), Integer.parseInt(courseId)) || !DbUtils.getUserType(Integer.parseInt(userId)).equals("P"))
+        if (CourseDbUtils.isCourseCreator(Integer.parseInt(userId), Integer.parseInt(courseId)) || UserDbUtils.isModerator(Integer.parseInt(userId), Integer.parseInt(courseId)) || !UserDbUtils.getUserType(Integer.parseInt(userId)).equals("P"))
         return "no";
         else return "yes";
     }
@@ -232,7 +231,7 @@ public class WebUserController {
         Properties data = parser.fromJson(request, Properties.class);
         String courseId = data.getProperty("courseId");
         String id = data.getProperty("id");
-        if (DbUtils.enroll(Integer.parseInt(id), Integer.parseInt(courseId)))
+        if (UserDbUtils.enroll(Integer.parseInt(id), Integer.parseInt(courseId)))
         return "User added to course";
         else return "Error";
     }
@@ -245,7 +244,7 @@ public class WebUserController {
         Properties data = parser.fromJson(request, Properties.class);
         String id = data.getProperty("id");
         String courseId = data.getProperty("courseId");
-        if (!(DbUtils.isCourseCreator(Integer.parseInt(id), Integer.parseInt(courseId)) || DbUtils.isModerator(Integer.parseInt(id), Integer.parseInt(courseId)) || !DbUtils.getUserType(Integer.parseInt(id)).equals("P")) && DbUtils.deleteUserFromCourseDb(Integer.parseInt(id), Integer.parseInt(courseId)))
+        if (!(CourseDbUtils.isCourseCreator(Integer.parseInt(id), Integer.parseInt(courseId)) || UserDbUtils.isModerator(Integer.parseInt(id), Integer.parseInt(courseId)) || !UserDbUtils.getUserType(Integer.parseInt(id)).equals("P")) && UserDbUtils.deleteUserFromCourseDb(Integer.parseInt(id), Integer.parseInt(courseId)))
         return "User deleted from course";
         else return "Error";
     }

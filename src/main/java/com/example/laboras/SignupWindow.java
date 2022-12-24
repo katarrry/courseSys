@@ -1,6 +1,6 @@
 package com.example.laboras;
 
-import com.example.laboras.control.DbUtils;
+import com.example.laboras.control.*;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -48,17 +48,17 @@ public class SignupWindow implements Initializable {
             LoginWindow.alertMessage("Please fill all the text fields");
         }
         else if (radioC.isSelected()) {
-            DbUtils.addCompany(userNameF.getText(), userSurnameF.getText(), userLoginF.getText(), userPswF.getText(), userEmailF.getText(), companyTitleF.getText());
+            CompanyDbUtils.addCompany(userNameF.getText(), userSurnameF.getText(), userLoginF.getText(), userPswF.getText(), userEmailF.getText(), companyTitleF.getText());
             LoginWindow.alertMessage("Company created successfully.");
             returnToPrevious();
         }
         else if (radioA.isSelected()) {
-            DbUtils.addAdmin(userNameF.getText(), userSurnameF.getText(), userLoginF.getText(), userPswF.getText(), userEmailF.getText());
+            UserDbUtils.addAdmin(userNameF.getText(), userSurnameF.getText(), userLoginF.getText(), userPswF.getText(), userEmailF.getText());
             LoginWindow.alertMessage("Admin created successfully.");
             returnToPrevious();
         }
         else  {
-            DbUtils.addPerson(userNameF.getText(), userSurnameF.getText(), userLoginF.getText(), userPswF.getText(), userEmailF.getText());
+            PersonDbUtils.addPerson(userNameF.getText(), userSurnameF.getText(), userLoginF.getText(), userPswF.getText(), userEmailF.getText());
             LoginWindow.alertMessage("User created successfully.");
             returnToPrevious();
         }
@@ -77,12 +77,7 @@ public class SignupWindow implements Initializable {
 
     private void returnToPrevious() throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("login-window.fxml"));
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-
-        Stage stage = (Stage) userLoginF.getScene().getWindow();
-        stage.setScene(scene);
-        stage.show();
+        ReturnHandler.returnMethod(fxmlLoader,(Stage)companyTitleF.getScene().getWindow());
     }
 
     @Override

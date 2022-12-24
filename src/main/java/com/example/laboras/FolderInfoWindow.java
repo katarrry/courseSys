@@ -1,7 +1,6 @@
 package com.example.laboras;
 
-import com.example.laboras.control.Constants;
-import com.example.laboras.control.DbUtils;
+import com.example.laboras.control.*;
 import com.example.laboras.ds.Folder;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -45,23 +44,24 @@ public class FolderInfoWindow implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        Folder folder = DbUtils.getFolderInfo(Constants.folderId);
-        id.setText("ID: "+folder.getId());
-        title.setText("Title: "+folder.getTitle());
-        dateCreated.setText("Date created: "+folder.getDateCreated());
-        dateUpdated.setText("Date updated: "+folder.getDateUpdated());
-        fileCount.setText("Files inside folder: "+DbUtils.getFolderFilesCount(Constants.folderId));
-
-        if (!(DbUtils.isCourseCreator(Constants.userId, folder.getParentCourse()) || Constants.userType.equals("A"))) {
-            newTitle.setVisible(false);
-            saveTitle.setVisible(false);
-            deleteFolder.setVisible(false);
-            addFile.setVisible(false);
-            fileTitle.setVisible(false);
-        }
-        if (DbUtils.isModerator(Constants.userId, folder.getParentCourse())) {
-            addFile.setVisible(true);
-            fileTitle.setVisible(true);
+        Folder folder = FolderDbUtils.getFolderInfo(Constants.folderId);
+        if(folder != null) {
+            id.setText("ID: " + folder.getId());
+            title.setText("Title: " + folder.getTitle());
+            dateCreated.setText("Date created: " + folder.getDateCreated());
+            dateUpdated.setText("Date updated: " + folder.getDateUpdated());
+            fileCount.setText("Files inside folder: " + FolderDbUtils.getFolderFilesCount(Constants.folderId));
+            if (!(CourseDbUtils.isCourseCreator(Constants.userId, folder.getParentCourse()) || Constants.userType.equals("A"))) {
+                newTitle.setVisible(false);
+                saveTitle.setVisible(false);
+                deleteFolder.setVisible(false);
+                addFile.setVisible(false);
+                fileTitle.setVisible(false);
+            }
+            if (UserDbUtils.isModerator(Constants.userId, folder.getParentCourse())) {
+                addFile.setVisible(true);
+                fileTitle.setVisible(true);
+            }
         }
     }
 
@@ -79,7 +79,7 @@ public class FolderInfoWindow implements Initializable {
     }
 
     public void deleteFolder(ActionEvent actionEvent) {
-        DbUtils.deleteFolderFromDb(Constants.folderId);
+        FolderDbUtils.deleteFolderFromDb(Constants.folderId);
         LoginWindow.alertMessage("Folder deleted");
         try {
             returnToPrevious();
@@ -94,20 +94,16 @@ public class FolderInfoWindow implements Initializable {
 
     public void returnToPrevious () throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("course-window.fxml"));
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-        Stage stage = (Stage) title.getScene().getWindow();
-        stage.setScene(scene);
-        stage.show();
+        ReturnHandler.returnMethod(fxmlLoader,(Stage)fileCount.getScene().getWindow());
     }
 
     public void addFile(ActionEvent actionEvent) {
         if (fileTitle.getText().equals(""))
             LoginWindow.alertMessage("Missing file title");
         else {
-            DbUtils.addFile(fileTitle.getText(), Constants.folderId);
+            FileDbUtils.addFile(fileTitle.getText(), Constants.folderId);
             LoginWindow.alertMessage("File added");
-            fileCount.setText("Files inside folder: "+DbUtils.getFolderFilesCount(Constants.folderId));
+            fileCount.setText("Files inside folder: "+FolderDbUtils.getFolderFilesCount(Constants.folderId));
         }
     }
 }

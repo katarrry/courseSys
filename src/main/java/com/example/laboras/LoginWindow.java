@@ -2,6 +2,8 @@ package com.example.laboras;
 
 import com.example.laboras.control.Constants;
 import com.example.laboras.control.DbUtils;
+import com.example.laboras.control.ReturnHandler;
+import com.example.laboras.control.UserDbUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -22,7 +24,7 @@ public class LoginWindow {
     public PasswordField pswF;
 
     public void validateLogin(ActionEvent actionEvent) throws IOException {
-        int id = DbUtils.validateByCredentials(loginF.getText(), pswF.getText());
+        int id = UserDbUtils.validateByCredentials(loginF.getText(), pswF.getText());
         if (id!=0) {
             Constants.userId = id;
             FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("course-window.fxml"));
@@ -49,10 +51,6 @@ public class LoginWindow {
 
     public void createNewUser(ActionEvent actionEvent) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("signup-window.fxml"));
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-        Stage stage = (Stage) loginF.getScene().getWindow();
-        stage.setScene(scene);
-        stage.show();
+        ReturnHandler.returnMethod(fxmlLoader,(Stage)loginF.getScene().getWindow());
     }
 }

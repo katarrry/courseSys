@@ -1,6 +1,7 @@
 package com.example.laboras.webControllers;
 
 import com.example.laboras.control.DbUtils;
+import com.example.laboras.control.FolderDbUtils;
 import com.example.laboras.ds.Course;
 import com.example.laboras.ds.File;
 import com.example.laboras.ds.Folder;
@@ -29,7 +30,7 @@ public class WebFolderController {
         Properties data = parser.fromJson(request, Properties.class);
         String title = data.getProperty("title");
         String courseId = data.getProperty("courseId");
-        DbUtils.addFolder(title, Integer.parseInt(courseId));
+        FolderDbUtils.addFolder(title, Integer.parseInt(courseId));
         return "Folder created";
     }
 
@@ -49,7 +50,7 @@ public class WebFolderController {
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
     public String deleteFolder(@RequestParam("id") String id) {
-        DbUtils.deleteFolderFromDb(Integer.parseInt(id));
+        FolderDbUtils.deleteFolderFromDb(Integer.parseInt(id));
         return "Folder deleted";
     }
 
@@ -57,7 +58,7 @@ public class WebFolderController {
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
     public String getFoldersByCourse(@RequestParam("courseId") String courseId) {
-        List<Folder> folders = DbUtils.getFoldersByCourseId(Integer.parseInt(courseId));
+        List<Folder> folders = FolderDbUtils.getFoldersByCourseId(Integer.parseInt(courseId));
         GsonBuilder gson = new GsonBuilder();
         gson.registerTypeAdapter(Folder.class, new FolderGSONSerializer());
         Gson parser = gson.create();

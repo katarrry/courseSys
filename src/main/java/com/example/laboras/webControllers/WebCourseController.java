@@ -1,6 +1,7 @@
 package com.example.laboras.webControllers;
 
 import com.example.laboras.control.Constants;
+import com.example.laboras.control.CourseDbUtils;
 import com.example.laboras.control.DbUtils;
 import com.example.laboras.ds.Course;
 import com.example.laboras.serializers.CourseGSONSerializer;
@@ -33,7 +34,7 @@ public class WebCourseController {
         String endDate = data.getProperty("endDate");
         String id = data.getProperty("id");
 
-        DbUtils.addCourse(title, desc, LocalDate.parse(startDate), LocalDate.parse(endDate), Integer.parseInt(id));
+        CourseDbUtils.addCourse(title, desc, LocalDate.parse(startDate), LocalDate.parse(endDate), Integer.parseInt(id));
         return "Course created";
     }
 
@@ -89,7 +90,7 @@ public class WebCourseController {
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
     public String getCoursesById(@RequestParam("id") String id) {
-        List<Course> courses = DbUtils.getCoursesByUser(Integer.parseInt(id));
+        List<Course> courses = CourseDbUtils.getCoursesByUser(Integer.parseInt(id));
         GsonBuilder gson = new GsonBuilder();
         gson.registerTypeAdapter(Course.class, new CourseGSONSerializer());
         Gson parser = gson.create();
@@ -106,7 +107,7 @@ public class WebCourseController {
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
     public String getCourses() {
-        List<Course> courses = DbUtils.getAllCourses();
+        List<Course> courses = CourseDbUtils.getAllCourses();
         GsonBuilder gson = new GsonBuilder();
         gson.registerTypeAdapter(Course.class, new CourseGSONSerializer());
         Gson parser = gson.create();
@@ -123,7 +124,7 @@ public class WebCourseController {
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
     public String deleteCourse(@RequestParam("id") String id) {
-        DbUtils.deleteCourseFromDb(Integer.parseInt(id));
+        CourseDbUtils.deleteCourseFromDb(Integer.parseInt(id));
         return "Course deleted";
     }
 

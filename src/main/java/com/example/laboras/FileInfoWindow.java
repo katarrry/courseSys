@@ -1,7 +1,6 @@
 package com.example.laboras;
 
-import com.example.laboras.control.Constants;
-import com.example.laboras.control.DbUtils;
+import com.example.laboras.control.*;
 import com.example.laboras.ds.File;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -39,17 +38,18 @@ public class FileInfoWindow implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        File file = DbUtils.getFileInfo(Constants.fileId);
-        id.setText("ID: "+file.getId());
-        title.setText("Title: "+file.getTitle());
-        dateCreated.setText("Date created: "+file.getDateCreated());
-        dateUpdated.setText("Date updated: "+file.getDateUpdated());
-
-        int courseId = DbUtils.getFileParentCourse(file.getParentFolder());
-        if (!(DbUtils.isCourseCreator(Constants.userId, courseId) || Constants.userType.equals("A"))) {
-            newTitle.setVisible(false);
-            saveTitle.setVisible(false);
-            deleteFile.setVisible(false);
+        File file = FileDbUtils.getFileInfo(Constants.fileId);
+        if(file != null) {
+            id.setText("ID: " + file.getId());
+            title.setText("Title: " + file.getTitle());
+            dateCreated.setText("Date created: " + file.getDateCreated());
+            dateUpdated.setText("Date updated: " + file.getDateUpdated());
+            int courseId = FolderDbUtils.getFileParentCourse(file.getParentFolder());
+            if (!(CourseDbUtils.isCourseCreator(Constants.userId, courseId) || Constants.userType.equals("A"))) {
+                newTitle.setVisible(false);
+                saveTitle.setVisible(false);
+                deleteFile.setVisible(false);
+            }
         }
     }
 
@@ -67,7 +67,7 @@ public class FileInfoWindow implements Initializable {
     }
 
     public void deleteFile(ActionEvent actionEvent) {
-        DbUtils.deleteFileFromDb(Constants.fileId);
+        FileDbUtils.deleteFileFromDb(Constants.fileId);
         LoginWindow.alertMessage("File deleted");
         try {
             returnToPrevious();
@@ -82,11 +82,7 @@ public class FileInfoWindow implements Initializable {
 
     public void returnToPrevious () throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("course-window.fxml"));
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-        Stage stage = (Stage) title.getScene().getWindow();
-        stage.setScene(scene);
-        stage.show();
+        ReturnHandler.returnMethod(fxmlLoader,(Stage)saveTitle.getScene().getWindow());
     }
 
 }

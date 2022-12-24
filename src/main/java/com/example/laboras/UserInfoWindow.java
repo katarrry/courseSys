@@ -1,7 +1,6 @@
 package com.example.laboras;
 
-import com.example.laboras.control.Constants;
-import com.example.laboras.control.DbUtils;
+import com.example.laboras.control.*;
 import com.example.laboras.ds.Company;
 import com.example.laboras.ds.Folder;
 import com.example.laboras.ds.Person;
@@ -46,24 +45,28 @@ public class UserInfoWindow implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        userType = DbUtils.getUserType(Constants.listUserId);
+        userType = UserDbUtils.getUserType(Constants.listUserId);
         if (!userType.equals("C")) {
             title.setVisible(false);
-            Person person = DbUtils.getPersonInfo(Constants.listUserId);
-            id.setText("User ID: "+person.getId());
-            name.setText(person.getName());
-            surname.setText(person.getSurname());
-            email.setText(person.getEmail());
-            login.setText(person.getLogin());
+            Person person = PersonDbUtils.getPersonInfo(Constants.listUserId);
+            if(person != null) {
+                id.setText("User ID: " + person.getId());
+                name.setText(person.getName());
+                surname.setText(person.getSurname());
+                email.setText(person.getEmail());
+                login.setText(person.getLogin());
+            }
         }
         else {
-            Company company = DbUtils.getCompanyInfo(Constants.listUserId);
-            id.setText("User ID: "+company.getId());
-            name.setText(company.getName());
-            surname.setText(company.getSurname());
-            email.setText(company.getEmail());
-            login.setText(company.getLogin());
-            title.setText(company.getTitle());
+            Company company = CompanyDbUtils.getCompanyInfo(Constants.listUserId);
+            if(company != null) {
+                id.setText("User ID: " + company.getId());
+                name.setText(company.getName());
+                surname.setText(company.getSurname());
+                email.setText(company.getEmail());
+                login.setText(company.getLogin());
+                title.setText(company.getTitle());
+            }
         }
     }
 
@@ -85,15 +88,11 @@ public class UserInfoWindow implements Initializable {
 
     public void returnToPrevious () throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("course-window.fxml"));
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-        Stage stage = (Stage) title.getScene().getWindow();
-        stage.setScene(scene);
-        stage.show();
+        ReturnHandler.returnMethod(fxmlLoader,(Stage)title.getScene().getWindow());
     }
 
     public void deleteUser(ActionEvent actionEvent) {
-        DbUtils.deleteUserFromDb(Constants.listUserId);
+        UserDbUtils.deleteUserFromDb(Constants.listUserId);
         LoginWindow.alertMessage("User Deleted");
         try {
             returnToPrevious();

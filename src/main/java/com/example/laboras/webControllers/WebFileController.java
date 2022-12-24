@@ -1,6 +1,7 @@
 package com.example.laboras.webControllers;
 
 import com.example.laboras.control.DbUtils;
+import com.example.laboras.control.FileDbUtils;
 import com.example.laboras.ds.Course;
 import com.example.laboras.ds.File;
 import com.example.laboras.serializers.CourseGSONSerializer;
@@ -30,7 +31,7 @@ public class WebFileController {
         Properties data = parser.fromJson(request, Properties.class);
         String title = data.getProperty("title");
         String fileId = data.getProperty("fileId");
-        DbUtils.addFile(title, Integer.parseInt(fileId));
+        FileDbUtils.addFile(title, Integer.parseInt(fileId));
         return "File created";
     }
 
@@ -50,7 +51,7 @@ public class WebFileController {
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
     public String deleteFile(@RequestParam("id") String id) {
-        DbUtils.deleteFileFromDb(Integer.parseInt(id));
+        FileDbUtils.deleteFileFromDb(Integer.parseInt(id));
         return "File deleted";
     }
 
@@ -58,7 +59,7 @@ public class WebFileController {
     @ResponseStatus(value = HttpStatus.OK)
     @ResponseBody
     public String getFilesByFolder(@RequestParam("folderId") String folderId) {
-        List<File> files = DbUtils.getFilesByFolderId(Integer.parseInt(folderId));
+        List<File> files = FileDbUtils.getFilesByFolderId(Integer.parseInt(folderId));
 
         GsonBuilder gson = new GsonBuilder();
         gson.registerTypeAdapter(File.class, new FileGSONSerializer());

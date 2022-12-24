@@ -1,7 +1,9 @@
 package com.example.laboras;
 
 import com.example.laboras.control.Constants;
+import com.example.laboras.control.CourseDbUtils;
 import com.example.laboras.control.DbUtils;
+import com.example.laboras.control.ReturnHandler;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -38,13 +40,9 @@ public class CreateCourseWindow {
 
         if (isDateOk && titleF.getText() != "" && descF.getText() != "" && endDateF.getValue() != null && startDateF.getValue() != null) {
             if (startDateF.getValue().compareTo(endDateF.getValue()) <= 0) {
-                DbUtils.addCourse(titleF.getText(), descF.getText(), startDateF.getValue(), endDateF.getValue(), Constants.userId);
+                CourseDbUtils.addCourse(titleF.getText(), descF.getText(), startDateF.getValue(), endDateF.getValue(), Constants.userId);
                 FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("course-window.fxml"));
-                Parent root = fxmlLoader.load();
-                Scene scene = new Scene(root);
-                Stage stage = (Stage) titleF.getScene().getWindow();
-                stage.setScene(scene);
-                stage.show();
+                ReturnHandler.returnMethod(fxmlLoader,(Stage)titleF.getScene().getWindow());
             } else {
                 LoginWindow.alertMessage("Cannot create course! Start date is after the end date");
             }

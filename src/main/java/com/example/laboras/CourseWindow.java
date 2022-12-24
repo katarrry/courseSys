@@ -1,7 +1,6 @@
 package com.example.laboras;
 
-import com.example.laboras.control.Constants;
-import com.example.laboras.control.DbUtils;
+import com.example.laboras.control.*;
 import com.example.laboras.ds.*;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -59,7 +58,7 @@ public class CourseWindow implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-       Constants.userType =  getUserType(Constants.userId);
+       Constants.userType =  UserDbUtils.getUserType(Constants.userId);
        viewFolder.setVisible(false);
        viewCourse.setVisible(false);
        viewFile.setVisible(false);
@@ -71,7 +70,7 @@ public class CourseWindow implements Initializable {
            allUsersTab.setDisable(true);
 
            allCourses.getItems().clear();
-           ArrayList<Course> allCoursesDb = DbUtils.getAllCourses();
+           ArrayList<Course> allCoursesDb = CourseDbUtils.getAllCourses();
 
            for (Course c : allCoursesDb) {
                allCourses.getItems().add(c.getId() + ":" + c.getTitle());
@@ -92,7 +91,7 @@ public class CourseWindow implements Initializable {
            myCoursesTab.setText("All courses");
 
            allCompanies.getItems().clear();
-           ArrayList<Company> allCompaniesDb = DbUtils.getAllCompanies();
+           ArrayList<Company> allCompaniesDb = CompanyDbUtils.getAllCompanies();
 
            for (Company c : allCompaniesDb) {
                allCompanies.getItems().add(c.getId() + ":" + c.getTitle());
@@ -103,7 +102,7 @@ public class CourseWindow implements Initializable {
            }
 
            allPerson.getItems().clear();
-           ArrayList<Person> allPersonDb = DbUtils.getAllPerson();
+           ArrayList<Person> allPersonDb = PersonDbUtils.getAllPerson();
 
            for (Person p : allPersonDb) {
                allPerson.getItems().add(p.getId() + ":" + p.getName() + ":" + p.getSurname());
@@ -118,10 +117,10 @@ public class CourseWindow implements Initializable {
         myCourses.getItems().clear();
         ArrayList<Course> myCoursesDb;
         if (Constants.userType.equals("A")) {
-            myCoursesDb = DbUtils.getAllCourses();
+            myCoursesDb = CourseDbUtils.getAllCourses();
         }
         else {
-            myCoursesDb = DbUtils.getCoursesByUser(Constants.userId);
+            myCoursesDb = CourseDbUtils.getCoursesByUser(Constants.userId);
         }
         for (Course c : myCoursesDb) {
             myCourses.getItems().add(c.getId() + ":" + c.getTitle());
@@ -138,7 +137,7 @@ public class CourseWindow implements Initializable {
             String courseIds = myCourses.getSelectionModel().getSelectedItem().toString().split(":")[0];
             Constants.courseId = Integer.parseInt(courseIds);
             myFolders.getItems().clear();
-            ArrayList<Folder> myFoldersDb = DbUtils.getFoldersByCourseId(Constants.courseId);
+            ArrayList<Folder> myFoldersDb = FolderDbUtils.getFoldersByCourseId(Constants.courseId);
             for (Folder f : myFoldersDb) {
                 myFolders.getItems().add(f.getId() + ":" + f.getTitle());
             }
@@ -157,7 +156,7 @@ public class CourseWindow implements Initializable {
             String folderIds = myFolders.getSelectionModel().getSelectedItem().toString().split(":")[0];
             Constants.folderId = Integer.parseInt(folderIds);
             myFiles.getItems().clear();
-            ArrayList<File> myFilesDb = DbUtils.getFilesByFolderId(Constants.folderId);
+            ArrayList<File> myFilesDb = FileDbUtils.getFilesByFolderId(Constants.folderId);
             for (File f : myFilesDb) {
                 myFiles.getItems().add(f.getId() + ":" + f.getTitle());
             }
@@ -208,10 +207,10 @@ public class CourseWindow implements Initializable {
     }
 
     public void enrollUser(ActionEvent actionEvent) {
-        enroll(Constants.userId, Constants.courseId);
+        UserDbUtils.enroll(Constants.userId, Constants.courseId);
         myCourses.getItems().clear();
         ArrayList<Course> myCoursesDb;
-        myCoursesDb = DbUtils.getCoursesByUser(Constants.userId);
+        myCoursesDb = CourseDbUtils.getCoursesByUser(Constants.userId);
         for (Course c : myCoursesDb) {
             myCourses.getItems().add(c.getId() + ":" + c.getTitle());
         }
@@ -221,21 +220,13 @@ public class CourseWindow implements Initializable {
 
     public void openEditUser(ActionEvent actionEvent) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("user-info-window.fxml"));
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-        Stage stage = (Stage) allCompanies.getScene().getWindow();
-        stage.setScene(scene);
-        stage.show();
+        ReturnHandler.returnMethod(fxmlLoader,(Stage)allCompanies.getScene().getWindow());
     }
 
     public void openEditMyUser(ActionEvent actionEvent) throws IOException {
         Constants.listUserId = Constants.userId;
         FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("user-info-window.fxml"));
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-        Stage stage = (Stage) myCourses.getScene().getWindow();
-        stage.setScene(scene);
-        stage.show();
+        ReturnHandler.returnMethod(fxmlLoader,(Stage)allCourses.getScene().getWindow());
     }
 
     public void setFile(MouseEvent mouseEvent) {

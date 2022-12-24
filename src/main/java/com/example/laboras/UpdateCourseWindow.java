@@ -2,6 +2,7 @@ package com.example.laboras;
 
 import com.example.laboras.control.Constants;
 import com.example.laboras.control.DbUtils;
+import com.example.laboras.control.ReturnHandler;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -48,7 +49,6 @@ public class UpdateCourseWindow {
         } else isDateOk = false;
         if (isDateOk) {
             DbUtils.updateTableDate("courses", "start_date", startDateF.getValue(), Constants.courseId);
-            isDateOk = true;
         }
         try {
             endDateF.getConverter().fromString(endDateF.getEditor().getText());
@@ -60,10 +60,6 @@ public class UpdateCourseWindow {
         }
 
         FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("course-window.fxml"));
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-        Stage stage = (Stage) titleF.getScene().getWindow();
-        stage.setScene(scene);
-        stage.show();
+        ReturnHandler.returnMethod(fxmlLoader,(Stage)endDateF.getScene().getWindow());
     }
 }

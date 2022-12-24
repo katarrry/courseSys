@@ -1,7 +1,6 @@
 package com.example.laboras;
 
-import com.example.laboras.control.Constants;
-import com.example.laboras.control.DbUtils;
+import com.example.laboras.control.*;
 import com.example.laboras.ds.Company;
 import com.example.laboras.ds.Course;
 import com.example.laboras.ds.Person;
@@ -69,7 +68,7 @@ public class CourseInfoWindow implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        isCreator = DbUtils.isCourseCreator(Constants.userId, Constants.courseId);
+        isCreator = CourseDbUtils.isCourseCreator(Constants.userId, Constants.courseId);
         removeEditor.setVisible(false);
         removeStudent.setVisible(false);
         addFolder.setVisible(false);
@@ -88,42 +87,50 @@ public class CourseInfoWindow implements Initializable {
             studentId.setVisible(false);
             addStudent.setVisible(false);
         }
-        if (DbUtils.isModerator(Constants.userId, Constants.courseId)) {
+        if (UserDbUtils.isModerator(Constants.userId, Constants.courseId)) {
             dropOut.setText("Remove editor rights");
             addFolder.setVisible(true);
             folderTitle.setVisible(true);
         }
-        Course course = DbUtils.getCourseInfo(Constants.courseId);
-        courseId.setText("Course id: "+course.getId());
-        courseTitle.setText("Course title: "+course.getTitle());
-        courseDesc.setText("Description: "+course.getDescription());
-        int creatorId = DbUtils.getCourseCreator(Constants.courseId);
-        if (DbUtils.getUserType(creatorId).equals("C")) {
-            Company company = DbUtils.getCompanyInfo(creatorId);
-            courseCreator.setText("Course creator: "+company.getTitle());
+        Course course = CourseDbUtils.getCourseInfo(Constants.courseId);
+
+        if(course != null) {
+            courseId.setText("Course id: " + course.getId());
+            courseTitle.setText("Course title: "+course.getTitle());
+            courseDesc.setText("Description: "+course.getDescription());
+        }
+        int creatorId = CourseDbUtils.getCourseCreator(Constants.courseId);
+        if (UserDbUtils.getUserType(creatorId).equals("C")) {
+            Company company = CompanyDbUtils.getCompanyInfo(creatorId);
+            if(company != null) {
+                courseCreator.setText("Course creator: " + company.getTitle());
+            }
         }
         else {
-            Person person = DbUtils.getPersonInfo(creatorId);
-            courseCreator.setText("Course creator: "+person.getName()+" "+person.getSurname());
+            Person person = PersonDbUtils.getPersonInfo(creatorId);
+            if(person != null) {
+                courseCreator.setText("Course creator: " + person.getName() + " " + person.getSurname());
+            }
         }
-        startDate.setText("Start date: "+course.getStartDate());
-        endDate.setText("End date: "+course.getEndDate());
-
+        if(course != null) {
+            startDate.setText("Start date: " + course.getStartDate());
+            endDate.setText("End date: " + course.getEndDate());
+        }
         fillEditorTable();
         fillStudentTable();
     }
 
     public void removeEditor(ActionEvent actionEvent) {
-        DbUtils.updateEditor(selectedEditorId, Constants.courseId);
-        if (DbUtils.getUserType(selectedEditorId).equals("C"))
-            DbUtils.deleteUserFromCourseDb(selectedEditorId, Constants.courseId);
+        UserDbUtils.updateEditor(selectedEditorId, Constants.courseId);
+        if (UserDbUtils.getUserType(selectedEditorId).equals("C"))
+            UserDbUtils.deleteUserFromCourseDb(selectedEditorId, Constants.courseId);
         LoginWindow.alertMessage("Editor rights removed");
         fillEditorTable();
         fillStudentTable();
     }
 
     public void removeStudent(ActionEvent actionEvent) {
-        DbUtils.deleteUserFromCourseDb(selectedStudentId, Constants.courseId);
+        UserDbUtils.deleteUserFromCourseDb(selectedStudentId, Constants.courseId);
         LoginWindow.alertMessage("Student removed");
         fillStudentTable();
     }
@@ -138,7 +145,7 @@ public class CourseInfoWindow implements Initializable {
     }
 
     public void deleteCourse(ActionEvent actionEvent) {
-        DbUtils.deleteCourseFromDb(Constants.courseId);
+        CourseDbUtils.deleteCourseFromDb(Constants.courseId);
         LoginWindow.alertMessage("Course deleted");
         try {
             returnToPrevious();
@@ -148,11 +155,11 @@ public class CourseInfoWindow implements Initializable {
     }
 
     public void dropOut(ActionEvent actionEvent) {
-        if (DbUtils.isModerator(Constants.userId, Constants.courseId) && Constants.userType.equals("P")) {
-            DbUtils.updateEditor(Constants.userId, Constants.courseId);
+        if (UserDbUtils.isModerator(Constants.userId, Constants.courseId) && Constants.userType.equals("P")) {
+            UserDbUtils.updateEditor(Constants.userId, Constants.courseId);
         }
         else {
-            DbUtils.deleteUserFromCourseDb(Constants.userId, Constants.courseId);
+            UserDbUtils.deleteUserFromCourseDb(Constants.userId, Constants.courseId);
         }
 
         LoginWindow.alertMessage("Dropped out from course");
@@ -165,11 +172,11 @@ public class CourseInfoWindow implements Initializable {
 
     public void fillEditorTable() {
         editorList.getItems().clear();
-        ArrayList<Person> personEditors = DbUtils.getCourseEditorsP(Constants.courseId);
+        ArrayList<Person> personEditors = PersonDbUtils.getCourseEditorsP(Constants.courseId);
         for (Person p : personEditors) {
             editorList.getItems().add(p.getId() + ":" + p.getName()+":"+p.getSurname());
         }
-        ArrayList<Company> companyEditors = DbUtils.getCourseEditorsC(Constants.courseId);
+        ArrayList<Company> companyEditors = CompanyDbUtils.getCourseEditorsC(Constants.courseId);
         for (Company c : companyEditors) {
             editorList.getItems().add(c.getId() + ":" + c.getTitle());
         }
@@ -180,9 +187,9 @@ public class CourseInfoWindow implements Initializable {
 
     public void fillStudentTable() {
         studentList.getItems().clear();
-        ArrayList<Person> students = DbUtils.getCourseStudents(Constants.courseId);
+        ArrayList<Person> students = PersonDbUtils.getCourseStudents(Constants.courseId);
         for (Person p : students) {
-            studentList.getItems().add(p.getId() + ":" + p.getName()+":"+p.getSurname());
+                studentList.getItems().add(p.getId() + ":" + p.getName() + ":" + p.getSurname());
         }
         if (!studentList.getItems().isEmpty() && (Constants.userType.equals("A") || isCreator)) {
             removeStudent.setVisible(true);
@@ -191,16 +198,16 @@ public class CourseInfoWindow implements Initializable {
 
     public void addEditor(ActionEvent actionEvent) {
         if (isInteger(editorId.getText())) {
-            if (!DbUtils.isCourseCreator(Integer.parseInt(editorId.getText()), Constants.courseId) && !DbUtils.getUserType(Integer.parseInt(editorId.getText())).equals("A")) {
-                if (DbUtils.isStudentEnrolled(Integer.parseInt(editorId.getText()), Constants.courseId)) {
-                    DbUtils.grantEditorRights(Integer.parseInt(editorId.getText()), Constants.courseId);
+            if (!CourseDbUtils.isCourseCreator(Integer.parseInt(editorId.getText()), Constants.courseId) && !UserDbUtils.getUserType(Integer.parseInt(editorId.getText())).equals("A")) {
+                if (UserDbUtils.isStudentEnrolled(Integer.parseInt(editorId.getText()), Constants.courseId)) {
+                    UserDbUtils.grantEditorRights(Integer.parseInt(editorId.getText()), Constants.courseId);
                     LoginWindow.alertMessage("Editor rights have been granted");
                 }
-                else if (DbUtils.getUserType(Integer.parseInt(editorId.getText())).equals("")) {
+                else if (UserDbUtils.getUserType(Integer.parseInt(editorId.getText())).equals("")) {
                     LoginWindow.alertMessage("Such user does not exist");
                 }
                 else {
-                    DbUtils.addEditor(Constants.courseId, Integer.parseInt(editorId.getText()));
+                    UserDbUtils.addEditor(Constants.courseId, Integer.parseInt(editorId.getText()));
                     LoginWindow.alertMessage("Editor added");
                 }
                 fillStudentTable();
@@ -226,8 +233,8 @@ public class CourseInfoWindow implements Initializable {
 
     public void addStudent(ActionEvent actionEvent) {
         if (isInteger(studentId.getText())) {
-            if (DbUtils.getUserType(Integer.parseInt(studentId.getText())).equals("P") && !DbUtils.isModerator(Integer.parseInt(studentId.getText()), Constants.courseId) && !DbUtils.isCourseCreator(Integer.parseInt(studentId.getText()), Constants.courseId)) {
-                DbUtils.enroll(Integer.parseInt(studentId.getText()), Constants.courseId);
+            if (UserDbUtils.getUserType(Integer.parseInt(studentId.getText())).equals("P") && !UserDbUtils.isModerator(Integer.parseInt(studentId.getText()), Constants.courseId) && !CourseDbUtils.isCourseCreator(Integer.parseInt(studentId.getText()), Constants.courseId)) {
+                UserDbUtils.enroll(Integer.parseInt(studentId.getText()), Constants.courseId);
                 LoginWindow.alertMessage("Student added");
                 fillStudentTable();
             }
@@ -244,11 +251,7 @@ public class CourseInfoWindow implements Initializable {
 
     public void returnToPrevious () throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("course-window.fxml"));
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-        Stage stage = (Stage) courseTitle.getScene().getWindow();
-        stage.setScene(scene);
-        stage.show();
+        ReturnHandler.returnMethod(fxmlLoader,(Stage)courseTitle.getScene().getWindow());
     }
 
     public void setEditor(MouseEvent mouseEvent) {
@@ -265,7 +268,7 @@ public class CourseInfoWindow implements Initializable {
         if (folderTitle.getText().equals(""))
             LoginWindow.alertMessage("Missing folder title");
         else {
-            DbUtils.addFolder(folderTitle.getText(), Constants.courseId);
+            FolderDbUtils.addFolder(folderTitle.getText(), Constants.courseId);
             LoginWindow.alertMessage("Folder added");
         }
     }
