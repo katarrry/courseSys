@@ -14,7 +14,7 @@
         <Tab fx:id="myCoursesTab" text="My courses">
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="426.0" prefWidth="664.0">
                 <Button fx:id="addNewCourseB" layoutX="470.0" layoutY="315.0" mnemonicParsing="false" onAction="#openCreateCourse" text="Add new course" />
-                <ListView fx:id="myCourses" layoutX="14.0" layoutY="14.0" onMouseClicked="#populateFolders" prefHeight="270.0" prefWidth="196.0">
+                <ListView fx:id="myCourses" layoutX="14.0" layoutY="14.0" onMouseClicked="#populateFoldersList" prefHeight="270.0" prefWidth="196.0">
                <contextMenu>
                   <ContextMenu>
                     <items>
@@ -22,7 +22,7 @@
                     </items>
                   </ContextMenu>
                </contextMenu></ListView>
-            <ListView fx:id="myFolders" layoutX="216.0" layoutY="15.0" onMouseClicked="#populateFiles" prefHeight="269.0" prefWidth="194.0">
+            <ListView fx:id="myFolders" layoutX="216.0" layoutY="15.0" onMouseClicked="#populateFilesList" prefHeight="269.0" prefWidth="194.0">
                <contextMenu>
                   <ContextMenu>
                      <items>

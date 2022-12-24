@@ -7,16 +7,15 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
-
 import java.io.IOException;
 import java.net.URL;
-import java.sql.Connection;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import static com.example.laboras.control.DbUtils.*;
@@ -56,162 +55,168 @@ public class CourseWindow implements Initializable {
     public MenuItem editCompany;
     @FXML
     public MenuItem editPerson;
+    private static final String USER_TYPE_PERSON = "P";
+    private static final String USER_TYPE_ADMIN = "A";
+    private static final String CREATE_COURSE_WINDOW_FXML = "create_course_window.fxml";
+    private static final String COURSE_INFO_WINDOW_FXML = "course-info-window.fxml";
+    private static final String FOLDER_INFO_WINDOW_FXML = "folder-info-window.fxml";
+    private static final String FILE_INFO_WINDOW_FXML = "file-info-window.fxml";
+    private static final String USER_INFO_WINDOW_FXML = "user-info-window.fxml";
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-       Constants.userType =  getUserType(Constants.userId);
-       viewFolder.setVisible(false);
-       viewCourse.setVisible(false);
-       viewFile.setVisible(false);
-       enroll.setVisible(false);
-       editCompany.setVisible(false);
-       editPerson.setVisible(false);
+        Constants.userType = getUserType(Constants.userId);
+        viewFolder.setVisible(false);
+        viewCourse.setVisible(false);
+        viewFile.setVisible(false);
+        enroll.setVisible(false);
+        editCompany.setVisible(false);
+        editPerson.setVisible(false);
 
-       if (Constants.userType.equals("P")) {
-           allUsersTab.setDisable(true);
+        allUsersTab.setDisable(true);
+        allCoursesTab.setDisable(true);
+        myCoursesTab.setText("---");
+        myCoursesTab.setDisable(true);
 
-           allCourses.getItems().clear();
-           ArrayList<Course> allCoursesDb = DbUtils.getAllCourses();
-
-           for (Course c : allCoursesDb) {
-               allCourses.getItems().add(c.getId() + ":" + c.getTitle());
-           }
-           if (!allCourses.getItems().isEmpty()) {
-               enroll.setVisible(true);
-           }
-
-       }
-       else if (Constants.userType.equals("C")) {
-           allUsersTab.setDisable(true);
-           allCoursesTab.setDisable(true);
-       }
-       else {
-           allCoursesTab.setText("---");
-           allCoursesTab.setDisable(true);
-         //  addNewCourseB.setVisible(false);
-           myCoursesTab.setText("All courses");
-
-           allCompanies.getItems().clear();
-           ArrayList<Company> allCompaniesDb = DbUtils.getAllCompanies();
-
-           for (Company c : allCompaniesDb) {
-               allCompanies.getItems().add(c.getId() + ":" + c.getTitle());
-           }
-
-           if (!allCompanies.getItems().isEmpty()) {
-               editCompany.setVisible(true);
-           }
-
-           allPerson.getItems().clear();
-           ArrayList<Person> allPersonDb = DbUtils.getAllPerson();
-
-           for (Person p : allPersonDb) {
-               allPerson.getItems().add(p.getId() + ":" + p.getName() + ":" + p.getSurname());
-           }
-
-           if (!allPerson.getItems().isEmpty()) {
-               editPerson.setVisible(true);
-           }
-
-       }
-
-        myCourses.getItems().clear();
-        ArrayList<Course> myCoursesDb;
-        if (Constants.userType.equals("A")) {
-            myCoursesDb = DbUtils.getAllCourses();
+        switch (Constants.userType) {
+            case USER_TYPE_PERSON -> populateAllCoursesList();
+            case USER_TYPE_ADMIN -> {
+                populateCompaniesList();
+                populatePersonList();
+                myCoursesTab.setText("All courses");
+                myCoursesTab.setDisable(false);
+                populateMyCoursesList();
+            }
         }
-        else {
+    }
+
+    private void populateAllCoursesList() {
+        List<Course> allCoursesDb = DbUtils.getAllCourses();
+        if (!allCoursesDb.isEmpty()) {
+            allCourses.getItems().clear();
+            for (Course c : allCoursesDb) {
+                allCourses.getItems().add(c.getId() + ":" + c.getTitle());
+            }
+            enroll.setVisible(true);
+        }
+    }
+
+    private void populateCompaniesList() {
+        List<Company> allCompaniesDb = DbUtils.getAllCompanies();
+        if (!allCompaniesDb.isEmpty()) {
+            allCompanies.getItems().clear();
+            for (Company c : allCompaniesDb) {
+                allCompanies.getItems().add(c.getId() + ":" + c.getTitle());
+            }
+            editCompany.setVisible(true);
+        }
+    }
+
+    private void populatePersonList() {
+        List<Person> allPersonDb = DbUtils.getAllPerson();
+        if (!allPersonDb.isEmpty()) {
+            allPerson.getItems().clear();
+            for (Person p : allPersonDb) {
+                allPerson.getItems().add(p.getId() + ":" + p.getName() + ":" + p.getSurname());
+            }
+            editPerson.setVisible(true);
+        }
+    }
+
+    private void populateMyCoursesList() {
+        List<Course> myCoursesDb;
+        if (Constants.userType.equals(USER_TYPE_ADMIN)) {
+            myCoursesDb = DbUtils.getAllCourses();
+        } else {
             myCoursesDb = DbUtils.getCoursesByUser(Constants.userId);
         }
-        for (Course c : myCoursesDb) {
-            myCourses.getItems().add(c.getId() + ":" + c.getTitle());
-        }
-        if (!myCourses.getItems().isEmpty()) {
+        if (!myCoursesDb.isEmpty()) {
+            myCourses.getItems().clear();
+            for (Course c : myCoursesDb) {
+                myCourses.getItems().add(c.getId() + ":" + c.getTitle());
+            }
             viewCourse.setVisible(true);
         }
-
-
     }
 
-    public void populateFolders(MouseEvent mouseEvent) {
+    private List<Folder> retrieveFolders() {
+        String courseIds = myCourses.getSelectionModel().getSelectedItem().toString().split(":")[0];
+        Constants.courseId = Integer.parseInt(courseIds);
+        return DbUtils.getFoldersByCourseId(Constants.courseId);
+    }
+
+    private void updateFoldersUI(List<Folder> folders) {
+        myFolders.getItems().clear();
+        for (Folder f : folders) {
+            myFolders.getItems().add(f.getId() + ":" + f.getTitle());
+        }
+        if (!myFolders.getItems().isEmpty()) {
+            viewFolder.setVisible(true);
+        }
+        myFiles.getItems().clear();
+    }
+
+    private void handleFoldersError(RuntimeException e) {
+        LoginWindow.alertMessage("Cannot populate folders!");
+    }
+
+    @FXML
+    private void populateFoldersList(MouseEvent mouseEvent) {
         try {
-            String courseIds = myCourses.getSelectionModel().getSelectedItem().toString().split(":")[0];
-            Constants.courseId = Integer.parseInt(courseIds);
-            myFolders.getItems().clear();
-            ArrayList<Folder> myFoldersDb = DbUtils.getFoldersByCourseId(Constants.courseId);
-            for (Folder f : myFoldersDb) {
-                myFolders.getItems().add(f.getId() + ":" + f.getTitle());
-            }
-            if (!myFolders.getItems().isEmpty()) {
-                viewFolder.setVisible(true);
-            }
-            myFiles.getItems().clear();
-
+            List<Folder> folders = retrieveFolders();
+            updateFoldersUI(folders);
         } catch (RuntimeException e) {
-
+            handleFoldersError(e);
         }
     }
 
-    public void populateFiles(MouseEvent mouseEvent) {
+    @FXML
+    private void populateFilesList(MouseEvent mouseEvent) {
         try {
             String folderIds = myFolders.getSelectionModel().getSelectedItem().toString().split(":")[0];
             Constants.folderId = Integer.parseInt(folderIds);
             myFiles.getItems().clear();
-            ArrayList<File> myFilesDb = DbUtils.getFilesByFolderId(Constants.folderId);
+            List<File> myFilesDb = DbUtils.getFilesByFolderId(Constants.folderId);
             for (File f : myFilesDb) {
                 myFiles.getItems().add(f.getId() + ":" + f.getTitle());
             }
             if (!myFiles.getItems().isEmpty()) {
                 viewFile.setVisible(true);
             }
-
         } catch (RuntimeException e) {
-
+            LoginWindow.alertMessage("Cannot populate files!");
         }
+    }
 
+    private void openWindow(String fxmlFile, Node source) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource(fxmlFile));
+        Parent root = fxmlLoader.load();
+        Scene scene = new Scene(root);
+        Stage stage = (Stage) source.getScene().getWindow();
+        stage.setScene(scene);
+        stage.show();
     }
 
     public void openCreateCourse(ActionEvent actionEvent) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("create_course_window.fxml"));
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-        Stage stage = (Stage) myCourses.getScene().getWindow();
-        stage.setScene(scene);
-        stage.show();
+        openWindow(CREATE_COURSE_WINDOW_FXML, myCourses);
     }
 
     public void openCourseInfo(ActionEvent actionEvent) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("course-info-window.fxml"));
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-        Stage stage = (Stage) myCourses.getScene().getWindow();
-        stage.setScene(scene);
-        stage.show();
+        openWindow(COURSE_INFO_WINDOW_FXML, myCourses);
     }
 
     public void openFolderInfo(ActionEvent actionEvent) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("folder-info-window.fxml"));
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-        Stage stage = (Stage) myFolders.getScene().getWindow();
-        stage.setScene(scene);
-        stage.show();
+        openWindow(FOLDER_INFO_WINDOW_FXML, myFolders);
     }
 
     public void openFileInfo(ActionEvent actionEvent) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("file-info-window.fxml"));
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-        Stage stage = (Stage) myFiles.getScene().getWindow();
-        stage.setScene(scene);
-        stage.show();
+        openWindow(FILE_INFO_WINDOW_FXML, myFiles);
     }
 
     public void enrollUser(ActionEvent actionEvent) {
         enroll(Constants.userId, Constants.courseId);
         myCourses.getItems().clear();
-        ArrayList<Course> myCoursesDb;
-        myCoursesDb = DbUtils.getCoursesByUser(Constants.userId);
+        List<Course> myCoursesDb = DbUtils.getCoursesByUser(Constants.userId);
         for (Course c : myCoursesDb) {
             myCourses.getItems().add(c.getId() + ":" + c.getTitle());
         }
@@ -220,22 +225,12 @@ public class CourseWindow implements Initializable {
     }
 
     public void openEditUser(ActionEvent actionEvent) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("user-info-window.fxml"));
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-        Stage stage = (Stage) allCompanies.getScene().getWindow();
-        stage.setScene(scene);
-        stage.show();
+        openWindow(USER_INFO_WINDOW_FXML, allCompanies);
     }
 
     public void openEditMyUser(ActionEvent actionEvent) throws IOException {
         Constants.listUserId = Constants.userId;
-        FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("user-info-window.fxml"));
-        Parent root = fxmlLoader.load();
-        Scene scene = new Scene(root);
-        Stage stage = (Stage) myCourses.getScene().getWindow();
-        stage.setScene(scene);
-        stage.show();
+        openWindow(USER_INFO_WINDOW_FXML, myCourses);
     }
 
     public void setFile(MouseEvent mouseEvent) {
