@@ -1,0 +1,71 @@
+package com.example.laboras;
+
+import com.example.laboras.control.DbUtils;
+import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+import java.io.IOException;
+import java.sql.*;
+
+public class LoginWindow{
+    @FXML
+    public TextField loginField;
+    @FXML
+    public PasswordField pswField;
+
+    public void validateLogin(ActionEvent actionEvent) throws IOException {
+        int id = validateByCredentials(loginField.getText(), pswField.getText());
+        if (id != 0) {
+            FXMLLoader fxmlLoader = new FXMLLoader(Start.class.getResource("course-window.fxml"));
+            Parent root = fxmlLoader.load();
+            Scene scene = new Scene(root);
+            Stage stage = new Stage();
+            stage.setScene(scene);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+        }
+        else {
+            alertMessage("Wrong input data, no such user found");
+        }
+    }
+
+    public static int validateByCredentials(String login, String psw) {
+        Connection connection = DbUtils.connectToDb();
+        int id = 0;
+        PreparedStatement preparedStatement = null;
+        try {
+            String selectUser = "SELECT * FROM users WHERE login = ? AND psw = ?";
+            preparedStatement = connection.prepareStatement(selectUser);
+            preparedStatement.setString(1, login);
+            preparedStatement.setString(2, psw);
+            ResultSet rs = preparedStatement.executeQuery();
+            if (rs.next()) {
+                id = rs.getInt(1);
+                DbUtils.disconnectFromDb(connection, preparedStatement);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            id = -1;
+        }
+        finally {
+            DbUtils.disconnectFromDb(connection, preparedStatement);
+        }
+        return id;
+    }
+
+    public static void alertMessage(String contentText) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Information Dialog");
+        alert.setHeaderText("Message text:");
+        alert.setContentText(contentText);
+        alert.initModality(Modality.APPLICATION_MODAL);
+        alert.showAndWait();
+    }
+}
